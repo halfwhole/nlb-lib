@@ -3,10 +3,6 @@ let TIMEOUT = 2000;
 const cheerio = require('cheerio');
 const axios = require('axios').create({ timeout: TIMEOUT });
 
-/* NOTE: only export getAvailabilityInfo and getTitleDetails.
- * They shall both return promises for the data in JSON format.
- */
-
 /**
  * bid: integer
  * returns: availability info for a given bid in JSON
