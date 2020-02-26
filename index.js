@@ -89,3 +89,48 @@ async function getMagicNumber() {
         throw "Error in getMagicNumber: " + error;
     }
 }
+
+async function runTests() {
+    function isAvailabilitiesCorrectFormat(availabilities) {
+        function isAvailabilityCorrectFormat(availability) {
+            return availability['branchName'] !== undefined
+                && availability['shelfLocation'] !== undefined
+                && availability['callNumber'] !== undefined
+                && availability['statusDesc'] !== undefined;
+        }
+        return availabilities.length > 0 && availabilities.every(isAvailabilityCorrectFormat);
+    }
+    function isTitleDetailsCorrectFormat(titleDetails) {
+        return titleDetails['titleName'] !== undefined
+            && titleDetails['author'] !== undefined;
+    }
+
+    function test(testFunction, testPredicate, expectedTestResult, bid) {
+        const errorMessage = (expectedTestResult ? 'Positive' : 'Negative') + ' test for ' + bid + ' failed';
+        return new Promise((res, rej) => {
+            testFunction(bid)
+                .then(availabilities => expectedTestResult && testPredicate(availabilities) ? res() : rej(errorMessage))
+                .catch(err => !expectedTestResult ? res() : rej(errorMessage + ', error message: ' + err));
+        });
+    }
+    function testAvailabilityInfo(expectedTestResult, bid) {
+        return test(getAvailabilityInfo, isAvailabilitiesCorrectFormat, expectedTestResult, bid);
+    }
+    function testTitleDetails(expectedTestResult, bid) {
+        return test(getTitleDetails, isTitleDetailsCorrectFormat, expectedTestResult, bid);
+    }
+
+    //  Test BIDs: 149910874 => The Annotated Alice, 188992694 => Aristotle and Dante
+    testAvailabilityInfo(true, 149910874);
+    testTitleDetails(true, 149910874);
+
+    testAvailabilityInfo(true, 188992694);
+    testTitleDetails(true, 188992694);
+
+    testAvailabilityInfo(false, 0);
+    testTitleDetails(false, 0);
+}
+
+runTests();
+
+module.exports = { getAvailabilityInfo, getTitleDetails };
