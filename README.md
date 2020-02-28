@@ -1,12 +1,14 @@
 # nlb-lib
 
-This library queries book information from NLB.
+This library queries book information from NLB. Works as of February 2020.
 
 ## Installation
 
 `npm install --save nlb-lib`
 
 ## Usage
+
+#### Operations
 
 Two operations are supported, `getTitleDetails` and `getAvailabilityInfo`.
 
@@ -33,9 +35,19 @@ Two operations are supported, `getTitleDetails` and `getAvailabilityInfo`.
   ... ]
 ```
 
-The book id `bid` can be found from the URL of the catalogue's book page:
+The book id `bid` can be found at the ending of the URL of the catalogue's book page:
 
 ![book id from URL](./bid.png)
+
+#### Configuration
+
+All operations have a default timeout of 5000ms per HTTP request (each
+operation requires two requests). This default timeout can be changed.
+
+``` javascript
+const nlb = require('nlb-lib');
+nlb.timeout = 1000;
+```
 
 ## Dependencies
 

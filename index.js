@@ -1,7 +1,8 @@
-let TIMEOUT = 2000;
-
 const cheerio = require('cheerio');
-const axios = require('axios').create({ timeout: TIMEOUT });
+const axios = require('axios');
+
+// Set a default timeout of 5000ms
+this.timeout = 5000;
 
 /**
  * bid: integer
@@ -36,9 +37,9 @@ async function getAvailabilityInfo(bid) {
         return availabilities;
     }
 
-    const magic_number = await getMagicNumber();
+    const magic_number = await getMagicNumber(this.timeout);
     const CATALOGUE_AVAILABILITIES_URL = `https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/${magic_number}/${bid}?RECDISP=REC`;
-    const response = await axios.get(CATALOGUE_AVAILABILITIES_URL);
+    const response = await axios.get(CATALOGUE_AVAILABILITIES_URL, { timeout: this.timeout });
     const availabilities = parseAvailabilities(response);
     if (availabilities.length === 0) {
         throw 'Availabilities could not be found, perhaps the book id is incorrect?';
@@ -59,9 +60,9 @@ async function getTitleDetails(bid) {
         return { titleName: title, author: author }
     }
 
-    const magic_number = await getMagicNumber();
+    const magic_number = await getMagicNumber(this.timeout);
     const CATALOGUE_TITLE_DETAILS_URL = `https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XFULL/WPAC/BIBENQ/${magic_number}/${bid}?FMT=REC`;
-    const response = await axios.get(CATALOGUE_TITLE_DETAILS_URL);
+    const response = await axios.get(CATALOGUE_TITLE_DETAILS_URL, { timeout: this.timeout });
     const titleDetails = parseTitleDetails(response);
     if (titleDetails['titleName'] === '' || titleDetails['author'] === '') {
         throw 'Title details could not be found, perhaps the book id is incorrect?';
@@ -72,10 +73,10 @@ async function getTitleDetails(bid) {
 /**
  * returns: integer
  */
-async function getMagicNumber() {
+async function getMagicNumber(timeout) {
     const CATALOGUE_URL = 'https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/ENQ/WPAC/BIBENQ';
+    const response = await axios.get(CATALOGUE_URL, { timeout });
     try {
-        const response = await axios.get(CATALOGUE_URL);
         const $ = cheerio.load(response.data);
         // data_returnurl: e.g. http://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/PGM/WPAC/CCOPT/LB/8?RDT=/cgi-bin/spydus.exe/SET/WPAC/BIBENQ/45640926
         const data_returnurl = $('nlb-mylibrary').attr('data-returnurl').trim();
@@ -127,6 +128,6 @@ async function runTests() {
     testTitleDetails(false, 0);
 }
 
-runTests();
+// runTests();
 
 module.exports = { getAvailabilityInfo, getTitleDetails };
